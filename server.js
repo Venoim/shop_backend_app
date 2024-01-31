@@ -1,19 +1,34 @@
 import express from "express";
-import connectToDB from "./conectDB";
+import bodyParser from "body-parser";
+import { connectToDB } from "./conectDB.js";
+import productsRoutes from "./routes/products.js"; // import endpointow
 
 const app = express();
 const port = 3001;
 
-app.use(express.json());
+app.use(bodyParser.json());
 
-app.get("/api/products", (req, res) => {
-  res.status(200).send("Hello Word!");
-});
+app.use("/api/products", productsRoutes);
 
-app.post("/", (req, res) => {
-  // Obsługa zapytań POST
+app.use("/api/users", usersRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Błąd serwera server.js status:500" });
 });
 
 app.listen(port, () => {
   console.log("serwer start");
 });
+
+// app.get("/api/products", (req, res) => {
+//   res.status(200).send("Hello Word!");
+// });
+
+// app.post("/", (req, res) => {
+//   // Obsługa zapytań POST
+// });
+
+// app.listen(port, () => {
+//   console.log("serwer start");
+// });
