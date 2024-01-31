@@ -9,17 +9,40 @@ await connectToDB();
 router.get("/", async (req, res) => {
   try {
     console.log("laczenie...");
-
     const data = await getAll(from, connection);
-
     res.json(data);
   } catch (error) {
     res.status(500).json({
-      error: "Błąd serwera products.js status:500",
+      error: "Błąd serwera",
       details: error.message,
     });
   }
 });
+
+// Endpoint GET dla pobierania pojedynczego produktu
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const sql = await connection.query(
+      `SELECT * FROM public."products" WHERE id = ${id};`
+    );
+    const result = sql.rows.map((item) => ({
+      id: item[0],
+      name: item[1],
+      price: item[2],
+    }));
+
+    if (sql) {
+      res.json(result);
+    } else {
+      res.status(404).json({ error: "Produkt nie został znaleziony" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Błąd serwera", details: error.message });
+  }
+});
+
 // Endpoint POST dla dodawania nowego produktu
 router.post("/", async (req, res) => {
   const { id, name, price } = req.body;
@@ -48,7 +71,33 @@ async function getAll(from, connection) {
   console.log("pobieram dane");
   const sql = `SELECT * FROM public.${from};`;
   const res = await connection.query(sql);
-  return res.rows;
+  const result = res.rows.map((item) => ({
+    id: item[0],
+    name: item[1],
+    price: item[2],
+  }));
+  return result;
 }
+//pobieranie pojedynczych rekordow
 
 export default router;
+
+// //dodawanie rekordu do tabeli
+// async function insertOne(tableName, data) {
+//   const query = `
+//     INSERT INTO public.${tableName} (id, name, surname, e_mail)
+//     VALUES (${data.id}, '${data.name}', '${data.surname}', '${data.e_mail}');
+//   `;
+//   const res = await connection.query(query);
+// }
+
+// //update rekordu
+// async function update(tableName, dataUpdate) {
+//   if (!tableName.id) return null;
+
+//   const query = `
+//         UPDATE public.${tableName} SET brand = '$1', model = '$2' WHERE id ='$3'
+//     `;
+
+//   await client.query(query, [tableName.name, tableName.surname, tableName.id]);
+// }

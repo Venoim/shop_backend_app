@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 
 app.use("/api/products", productsRoutes);
 
-app.use("/api/users", usersRoutes);
+// app.use("/api/users", usersRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
