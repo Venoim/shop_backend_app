@@ -1,15 +1,16 @@
-const express = require("express");
-const bodyParser = require("body-parser");
+import express from "express";
+import connectToDB from "./conectDB";
+
 const app = express();
 const port = 3001;
 
-app.use(bodyParser.json());
+app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/api/products", (req, res) => {
   res.status(200).send("Hello Word!");
 });
 
-app.post("/api/dane", (req, res) => {
+app.post("/", (req, res) => {
   // Obsługa zapytań POST
 });
 
