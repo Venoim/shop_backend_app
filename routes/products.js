@@ -55,7 +55,6 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const connection = await connectToDB();
     await connection.query(
       `INSERT INTO public.${from} (id, name, price) VALUES (${id}, '${name}', ${price})`
     );
@@ -63,6 +62,26 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Błąd serwera", error });
+  }
+});
+
+// Endpoint DELETE dla usuwania produktu
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const connection = await connectToDB();
+    const result = await connection.query(
+      `DELETE FROM public."products" WHERE id = ${id};`
+    );
+    if (result.rowsAffected > 0) {
+      res.json({ message: "Produkt został pomyślnie usunięty" });
+    } else {
+      res.status(404).json({ error: "Produkt nie został znaleziony" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Błąd serwera", details: error.message });
   }
 });
 
