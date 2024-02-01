@@ -56,7 +56,7 @@ router.post("/", async (req, res) => {
 
   try {
     await connection.query(
-      `INSERT INTO public.${from} (id, name, price) VALUES (${id}, '${name}', ${price})`
+      `INSERT INTO public.${from} (id, name, price) VALUES (${id}, '${name}', ${price});`
     );
     res.json({ message: "Produkt dodany pomyślnie" });
   } catch (error) {
@@ -99,23 +99,3 @@ async function getAll(from, connection) {
 }
 
 export default router;
-
-// //dodawanie rekordu do tabeli
-// async function insertOne(tableName, data) {
-//   const query = `
-//     INSERT INTO public.${tableName} (id, name, surname, e_mail)
-//     VALUES (${data.id}, '${data.name}', '${data.surname}', '${data.e_mail}');
-//   `;
-//   const res = await connection.query(query);
-// }
-
-// //update rekordu
-// async function update(tableName, dataUpdate) {
-//   if (!tableName.id) return null;
-
-//   const query = `
-//         UPDATE public.${tableName} SET brand = '$1', model = '$2' WHERE id ='$3'
-//     `;
-
-//   await client.query(query, [tableName.name, tableName.surname, tableName.id]);
-// }

@@ -1,11 +1,12 @@
 import express from "express";
+import { port } from "./config/config.js";
 import bodyParser from "body-parser";
-// import { connectToDB } from "./conectDB.js";
+import { connectToDB } from "./conectDB.js";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
 
 const app = express();
-const port = 3001;
+// const port = 3001;
 
 app.use(bodyParser.json());
 
@@ -15,7 +16,9 @@ app.use("/api/users", usersRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Błąd serwera server.js status:500" });
+  res.status(500).json({
+    error: "Błąd serwera server.js status:500",
+  });
 });
 
 app.listen(port, () => {
