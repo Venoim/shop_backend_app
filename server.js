@@ -1,6 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { connectToDB } from "./conectDB.js";
+// import { connectToDB } from "./conectDB.js";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
 
@@ -21,15 +21,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log("serwer start");
 });
-
-// app.get("/api/products", (req, res) => {
-//   res.status(200).send("Hello Word!");
-// });
-
-// app.post("/", (req, res) => {
-//   // Obsługa zapytań POST
-// });
-
-// app.listen(port, () => {
-//   console.log("serwer start");
-// });
