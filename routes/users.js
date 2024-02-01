@@ -29,7 +29,8 @@ router.get("/:id", async (req, res) => {
     const result = sql.rows.map((item) => ({
       id: item[0],
       name: item[1],
-      price: item[2],
+      surname: item[2],
+      email: item[3],
     }));
 
     if (sql) {
@@ -45,14 +46,14 @@ router.get("/:id", async (req, res) => {
 
 // Endpoint POST dla dodawania nowego uzytkownika
 router.post("/", async (req, res) => {
-  const { id, name, surname, email } = req.body;
+  const { name, surname, email, password } = req.body;
 
-  if (!id || !name || !surname || !email) {
+  if (!name || !surname || !email) {
     return res.status(400).json({ error: "Brak wymaganych danych" });
   }
   try {
     await connection.query(
-      `INSERT INTO public.${from} (id, name, surname, email) VALUES (${id}, '${name}', '${surname}', '${email}')`
+      `INSERT INTO public.${from} (name, surname, email, password) VALUES ('${name}', '${surname}', '${email}', '${password}')`
     );
     res.json({ message: "Uzytkownik dodany pomyślnie" });
   } catch (error) {
