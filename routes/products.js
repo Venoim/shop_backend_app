@@ -24,7 +24,7 @@ router.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const sql = await connection.query(
-      `SELECT * FROM public."products" WHERE id = ${id};`
+      `SELECT * FROM public.${from} WHERE id = ${id};`
     );
     const result = sql.rows.map((item) => ({
       id: item[0],
@@ -72,7 +72,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const connection = await connectToDB();
     const result = await connection.query(
-      `DELETE FROM public."products" WHERE id = ${id};`
+      `DELETE FROM public.${from} WHERE id = ${id};`
     );
     if (result.rowsAffected > 0) {
       res.json({ message: "Produkt został pomyślnie usunięty" });
@@ -97,7 +97,6 @@ async function getAll(from, connection) {
   }));
   return result;
 }
-//pobieranie pojedynczych rekordow
 
 export default router;
 
