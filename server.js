@@ -7,14 +7,12 @@ import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
 
 const app = express();
-
+app.use(cors()); // Dodaj to jako middleware
 app.use(bodyParser.json());
 
 app.use("/api/products", productsRoutes);
 
 app.use("/api/users", usersRoutes);
-
-app.use(cors()); // Dodaj to jako middleware
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

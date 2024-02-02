@@ -1,9 +1,11 @@
+import "dotenv/config";
+
 const dbConfig = {
-  host: "postgre://database-shop.cri2ia2emfjm.eu-north-1.rds.amazonaws.com",
-  port: 5432,
-  user: "root",
-  password: "haslobaza1",
-  database: "postgres",
+  host: process.env["DB_HOST"],
+  port: process.env["DB_PORT"],
+  user: process.env["DB_USER"],
+  password: process.env["DB_PASSWORD"],
+  database: process.env["DB_DATABASE"],
 };
 
 export default dbConfig;
