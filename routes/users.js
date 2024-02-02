@@ -5,6 +5,7 @@ const router = express.Router();
 
 const from = "users";
 await connectToDB();
+
 // Endpoint GET dla pobierania uzytkownikow
 router.get("/", async (req, res) => {
   try {
@@ -93,6 +94,7 @@ async function getAll(from, connection) {
     surname: item[2],
     email: item[3],
   }));
+  console.log("pobrano:", result);
   return result;
 }
 
