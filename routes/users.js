@@ -45,7 +45,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Endpoint POST dla dodawania nowego uzytkownika
+// Endpoint POST
+// dla dodawania nowego uzytkownika
 router.post("/", async (req, res) => {
   const { name, surname, email, password } = req.body;
 
@@ -60,6 +61,22 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Błąd serwera", error });
+  }
+});
+// wefyfikacja meila
+router.post("/check-email", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Sprawdź, czy email już istnieje w bazie danych
+    const result = await connection.query(
+      `SELECT * FROM public.${from} WHERE email = '${email}'`
+    );
+
+    res.json({ exists: result.rows.length > 0 }); // Zwróć wynik sprawdzenia (true/false)
+  } catch (error) {
+    console.error("Błąd podczas sprawdzania emaila:", error);
+    res.status(500).json({ error: "Błąd serwera", details: error.message });
   }
 });
 
