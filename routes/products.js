@@ -5,11 +5,13 @@ const router = express.Router();
 
 const from = "products";
 await connectToDB();
+
 // Endpoint GET dla pobierania produktów
 router.get("/", async (req, res) => {
   try {
     console.log("laczenie...");
     const data = await getAll(from, connection);
+    console.log(data);
     res.json(data);
   } catch (error) {
     res.status(500).json({
@@ -30,6 +32,31 @@ router.get("/:id", async (req, res) => {
       id: item[0],
       name: item[1],
       price: item[2],
+      // category: item[3],
+    }));
+
+    if (sql) {
+      res.json(result);
+    } else {
+      res.status(404).json({ error: "Produkt nie został znaleziony" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Błąd serwera", details: error.message });
+  }
+});
+// Endpoint GET dla pobierania wedlug kategorii
+router.get("/category/:categoryId", async (req, res) => {
+  const categoryId = req.params.categoryId;
+  try {
+    const sql = await connection.query(
+      `SELECT * FROM public.${from} WHERE "categoriesId" = ${categoryId};`
+    );
+    const result = sql.rows.map((item) => ({
+      id: item[0],
+      name: item[1],
+      price: item[2],
+      category: item[3],
     }));
 
     if (sql) {
@@ -94,6 +121,7 @@ async function getAll(from, connection) {
     id: item[0],
     name: item[1],
     price: item[2],
+    category: item[3],
   }));
   return result;
 }

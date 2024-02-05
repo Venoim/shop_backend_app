@@ -5,10 +5,13 @@ import bodyParser from "body-parser";
 import { connectToDB } from "./conectDB.js";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
+import categoriesRoutes from "./routes/categories.js";
 
 const app = express();
 app.use(cors()); // Dodaj to jako middleware
 app.use(bodyParser.json());
+
+app.use("/api/categories", categoriesRoutes);
 
 app.use("/api/products", productsRoutes);
 
@@ -24,14 +27,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log("serwer start");
 });
-
-//Test
-// Przykładowa lista użytkowników
-// const users = [
-//   { id: 1, name: "Abc", surname: "QWE" },
-//   { id: 2, name: "ZXC", surname: "VBN" },
-// ];
-
-// app.get("/api/users", (req, res) => {
-//   res.json(users);
-// });
