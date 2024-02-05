@@ -9,9 +9,22 @@ await connectToDB();
 // Endpoint GET dla pobierania produktów
 router.get("/", async (req, res) => {
   try {
-    console.log("laczenie...");
-    const data = await getAll(from, connection);
-    console.log(data);
+    const { limit } = req.query;
+
+    let query = `SELECT * FROM public.${from}`;
+
+    if (limit) {
+      query += ` LIMIT ${parseInt(limit)}`;
+    }
+
+    const result = await connection.query(query);
+    const data = result.rows.map((item) => ({
+      id: item[0],
+      name: item[1],
+      price: item[2],
+      category: item[3],
+    }));
+
     res.json(data);
   } catch (error) {
     res.status(500).json({
@@ -32,7 +45,7 @@ router.get("/:id", async (req, res) => {
       id: item[0],
       name: item[1],
       price: item[2],
-      // category: item[3],
+      category: item[3],
     }));
 
     if (sql) {
@@ -48,25 +61,30 @@ router.get("/:id", async (req, res) => {
 // Endpoint GET dla pobierania wedlug kategorii
 router.get("/category/:categoryId", async (req, res) => {
   const categoryId = req.params.categoryId;
+
   try {
-    const sql = await connection.query(
-      `SELECT * FROM public.${from} WHERE "categoriesId" = ${categoryId};`
-    );
-    const result = sql.rows.map((item) => ({
+    const { limit } = req.query;
+
+    let query = `SELECT * FROM public.${from} WHERE "categoriesId" = ${categoryId}`;
+
+    if (limit) {
+      query += ` LIMIT ${parseInt(limit)}`;
+    }
+
+    const result = await connection.query(query);
+    const data = result.rows.map((item) => ({
       id: item[0],
       name: item[1],
       price: item[2],
       category: item[3],
     }));
 
-    if (sql) {
-      res.json(result);
-    } else {
-      res.status(404).json({ error: "Produkt nie został znaleziony" });
-    }
+    res.json(data);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Błąd serwera", details: error.message });
+    res.status(500).json({
+      error: "Błąd serwera",
+      details: error.message,
+    });
   }
 });
 
