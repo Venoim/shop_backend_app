@@ -9,12 +9,19 @@ await connectToDB();
 // Endpoint GET dla pobierania produktów
 router.get("/", async (req, res) => {
   try {
-    const { limit } = req.query;
+    const { limit, page } = req.query;
+
+    const offset = (page - 1) * limit;
 
     let query = `SELECT * FROM public.${from}`;
+    const countQuery = `SELECT COUNT(*) FROM public.${from}`;
 
     if (limit) {
       query += ` LIMIT ${parseInt(limit)}`;
+    }
+
+    if (page) {
+      query += ` OFFSET ${offset}`;
     }
 
     const result = await connection.query(query);
@@ -25,7 +32,13 @@ router.get("/", async (req, res) => {
       category: item[3],
     }));
 
-    res.json(data);
+    const countResult = await connection.query(countQuery);
+    const totalProducts = countResult.rows[0].count;
+
+    res.json({
+      data,
+      totalProducts,
+    });
   } catch (error) {
     res.status(500).json({
       error: "Błąd serwera",
@@ -58,17 +71,16 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: "Błąd serwera", details: error.message });
   }
 });
-// Endpoint GET dla pobierania wedlug kategorii
+// Endpoint GET dla pobierania według kategorii
 router.get("/category/:categoryId", async (req, res) => {
   const categoryId = req.params.categoryId;
+  const { limit, page } = req.query;
 
   try {
-    const { limit } = req.query;
-
     let query = `SELECT * FROM public.${from} WHERE "categoriesId" = ${categoryId}`;
-
-    if (limit) {
-      query += ` LIMIT ${parseInt(limit)}`;
+    if (limit && page) {
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      query += ` LIMIT ${parseInt(limit)} OFFSET ${offset}`;
     }
 
     const result = await connection.query(query);
@@ -79,7 +91,15 @@ router.get("/category/:categoryId", async (req, res) => {
       category: item[3],
     }));
 
-    res.json(data);
+    // Dodaj kod do pobrania całkowitej liczby produktów dla danej kategorii
+    const countResult = await connection.query(
+      `SELECT COUNT(*) FROM public.${from} WHERE "categoriesId" = ${categoryId}`
+    );
+    const totalProducts = countResult.rows[0][0];
+    res.json({
+      data,
+      totalProducts,
+    });
   } catch (error) {
     res.status(500).json({
       error: "Błąd serwera",
@@ -131,17 +151,17 @@ router.delete("/:id", async (req, res) => {
 });
 
 //pobieranie danych
-async function getAll(from, connection) {
-  console.log("pobieram dane");
-  const sql = `SELECT * FROM public.${from};`;
-  const res = await connection.query(sql);
-  const result = res.rows.map((item) => ({
-    id: item[0],
-    name: item[1],
-    price: item[2],
-    category: item[3],
-  }));
-  return result;
-}
+// async function getAll(from, connection) {
+//   console.log("pobieram dane");
+//   const sql = `SELECT * FROM public.${from};`;
+//   const res = await connection.query(sql);
+//   const result = res.rows.map((item) => ({
+//     id: item[0],
+//     name: item[1],
+//     price: item[2],
+//     category: item[3],
+//   }));
+//   return result;
+// }
 
 export default router;
