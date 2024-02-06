@@ -6,21 +6,22 @@ const router = express.Router();
 const from = "products";
 await connectToDB();
 
-// Endpoint GET dla pobierania produktów
+// Endpoint GET dla pobierania wszystkich produktów
 router.get("/", async (req, res) => {
   try {
     const { limit, page } = req.query;
 
-    const offset = (page - 1) * limit;
-
     let query = `SELECT * FROM public.${from}`;
     const countQuery = `SELECT COUNT(*) FROM public.${from}`;
 
+    // Jeśli nie ma limitu, nie dodawaj ograniczenia LIMIT
     if (limit) {
       query += ` LIMIT ${parseInt(limit)}`;
     }
 
-    if (page) {
+    // Jeśli jest podana strona i limit, oblicz offset
+    if (page && limit) {
+      const offset = (parseInt(page) - 1) * parseInt(limit);
       query += ` OFFSET ${offset}`;
     }
 
@@ -33,7 +34,7 @@ router.get("/", async (req, res) => {
     }));
 
     const countResult = await connection.query(countQuery);
-    const totalProducts = countResult.rows[0].count;
+    const totalProducts = countResult.rows[0];
 
     res.json({
       data,
@@ -62,7 +63,10 @@ router.get("/:id", async (req, res) => {
     }));
 
     if (sql) {
-      res.json(result);
+      res.json({
+        result,
+        totalProducts,
+      });
     } else {
       res.status(404).json({ error: "Produkt nie został znaleziony" });
     }
@@ -77,7 +81,14 @@ router.get("/category/:categoryId", async (req, res) => {
   const { limit, page } = req.query;
 
   try {
-    let query = `SELECT * FROM public.${from} WHERE "categoriesId" = ${categoryId}`;
+    let query = `SELECT * FROM public.${from}`;
+    if (categoryId !== "null") {
+      // Sprawdzenie, czy categoryId nie jest puste
+      query += ` WHERE "categoriesId" = ${categoryId}`;
+    } else {
+      // Obsługa przypadku, gdy categoryId jest puste
+      query += ` WHERE "categoriesId" IS NULL`;
+    }
     if (limit && page) {
       const offset = (parseInt(page) - 1) * parseInt(limit);
       query += ` LIMIT ${parseInt(limit)} OFFSET ${offset}`;
@@ -92,9 +103,15 @@ router.get("/category/:categoryId", async (req, res) => {
     }));
 
     // Dodaj kod do pobrania całkowitej liczby produktów dla danej kategorii
-    const countResult = await connection.query(
-      `SELECT COUNT(*) FROM public.${from} WHERE "categoriesId" = ${categoryId}`
-    );
+    let countQuery = `SELECT COUNT(*) FROM public.${from}`;
+    if (categoryId !== "null") {
+      // Sprawdzenie, czy categoryId nie jest puste
+      countQuery += ` WHERE "categoriesId" = ${categoryId}`;
+    } else {
+      // Obsługa przypadku, gdy categoryId jest puste
+      countQuery += ` WHERE "categoriesId" IS NULL`;
+    }
+    const countResult = await connection.query(countQuery);
     const totalProducts = countResult.rows[0][0];
     res.json({
       data,
