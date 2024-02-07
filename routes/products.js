@@ -60,12 +60,13 @@ router.get("/:id", async (req, res) => {
       name: item[1],
       price: item[2],
       category: item[3],
+      description: item[4],
+      imgUrl: item[5],
     }));
 
     if (sql) {
       res.json({
         result,
-        totalProducts,
       });
     } else {
       res.status(404).json({ error: "Produkt nie został znaleziony" });
