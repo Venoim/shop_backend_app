@@ -10,13 +10,14 @@ const product = "products";
 await connectToDB();
 
 // Endpoint dodawanie do kosza
-router.post("/basket/add", async (req, res) => {
+router.post("/add", async (req, res) => {
+  console.log(req.body);
   try {
     const { userId, productId, quantity } = req.body;
 
     // Sprawdź, czy użytkownik i produkt istnieją w bazie danych
-    const userQuery = `SELECT * FROM public.${user} WHERE user_id = ${userId}`;
-    const productQuery = `SELECT * FROM public.${product} WHERE product_id = ${productId}`;
+    const userQuery = `SELECT * FROM public.${user} WHERE id = ${userId}`;
+    const productQuery = `SELECT * FROM public.${product} WHERE id = ${productId}`;
     const userResult = await connection.query(userQuery);
     const productResult = await connection.query(productQuery);
 
@@ -38,8 +39,8 @@ router.post("/basket/add", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-router.delete("/basket/remove/:basketId", async (req, res) => {
+// usowanie
+router.delete("/remove/:basketId", async (req, res) => {
   try {
     const basketId = req.params.basketId;
     const deleteQuery = `DELETE FROM public.${from} WHERE basket_id = ${basketId}`;
@@ -53,12 +54,12 @@ router.delete("/basket/remove/:basketId", async (req, res) => {
   }
 });
 
-router.put("/basket/update/:basketId", async (req, res) => {
+router.put("/update/:basketId", async (req, res) => {
   try {
     const basketId = req.params.basketId;
     const newQuantity = req.body.quantity; // Załóżmy, że nowa ilość produktu jest przekazywana w ciele żądania
-    const updateQuery = `UPDATE public.${from} SET quantity = $1 WHERE basket_id = ${basketId}`;
-    await pool.query(updateQuery, [newQuantity]);
+    const updateQuery = `UPDATE public.${from} SET quantity = ${newQuantity} WHERE basket_id = ${basketId}`;
+    await pool.query(updateQuery);
 
     res.status(200).json({ message: "basket updated successfully" });
   } catch (error) {
@@ -67,17 +68,22 @@ router.put("/basket/update/:basketId", async (req, res) => {
   }
 });
 
-router.get("/basket/:userId", async (req, res) => {
+router.get("/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
     const query = `
-      SELECT public.${from}.basket_id, products.name, products.price, basket.quantity
+      SELECT ${from}.basket_id, products.name, products.price, ${from}.quantity
       FROM public.${from}
-      INNER JOIN products ON basket.product_id = products.product_id
-      WHERE basket.user_id = $1
+      INNER JOIN products ON basket.product_id = products.id
+      WHERE basket.user_id = ${userId}
     `;
-    const result = await pool.query(query, [userId]);
-    const basketItems = result.rows;
+    const result = await connection.query(query);
+    const basketItems = result.rows.map((item) => ({
+      id: item[0],
+      name: item[1],
+      price: item[2],
+      quantity: item[3],
+    }));
 
     res.status(200).json(basketItems);
   } catch (error) {
