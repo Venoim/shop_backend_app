@@ -33,7 +33,6 @@ router.get("/:id", async (req, res) => {
       name: item[1],
       surname: item[2],
       email: item[3],
-      password: item[4], //do usuniecia
     }));
 
     if (sql) {
@@ -110,7 +109,15 @@ router.post("/login", async (req, res) => {
         if (isPasswordValid) {
           // Hasła są identyczne
           const { password, ...userDataWithoutPassword } = user;
-          res.json(userDataWithoutPassword);
+
+          const dataUser = result.rows.map((item) => ({
+            id: item[0],
+            name: item[1],
+            surname: item[2],
+            email: item[3],
+            password: item[4], //do usuniecia
+          }));
+          res.json(dataUser); //userDataWithoutPassword
         } else {
           // Hasła się nie zgadzają
           res.status(401).json({ error: "Błędne dane logowania" });
