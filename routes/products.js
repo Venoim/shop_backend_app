@@ -168,18 +168,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-//pobieranie danych
-// async function getAll(from, connection) {
-//   console.log("pobieram dane");
-//   const sql = `SELECT * FROM public.${from};`;
-//   const res = await connection.query(sql);
-//   const result = res.rows.map((item) => ({
-//     id: item[0],
-//     name: item[1],
-//     price: item[2],
-//     category: item[3],
-//   }));
-//   return result;
-// }
-
 export default router;
