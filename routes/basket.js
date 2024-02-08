@@ -44,7 +44,7 @@ router.delete("/remove/:basketId", async (req, res) => {
   try {
     const basketId = req.params.basketId;
     const deleteQuery = `DELETE FROM public.${from} WHERE basket_id = ${basketId}`;
-    await pool.query(deleteQuery);
+    await connection.query(deleteQuery);
     res
       .status(200)
       .json({ message: "Product removed from basket successfully" });
@@ -59,7 +59,7 @@ router.put("/update/:basketId", async (req, res) => {
     const basketId = req.params.basketId;
     const newQuantity = req.body.quantity; // Załóżmy, że nowa ilość produktu jest przekazywana w ciele żądania
     const updateQuery = `UPDATE public.${from} SET quantity = ${newQuantity} WHERE basket_id = ${basketId}`;
-    await pool.query(updateQuery);
+    await connection.query(updateQuery);
 
     res.status(200).json({ message: "basket updated successfully" });
   } catch (error) {
