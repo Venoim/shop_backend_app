@@ -1,12 +1,13 @@
 import express from "express";
 import { connectToDB, connection } from "../conectDB.js";
+import bcrypt from "bcrypt";
 import {
   AuthenticationDetails,
   CognitoUserAttribute,
   CognitoUser,
   CognitoUserPool,
 } from "amazon-cognito-identity-js";
-import { userPool, confirmUser } from "../config/config.js";
+import { userPool } from "../config/config.js";
 
 const router = express.Router();
 
@@ -52,34 +53,38 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Endpoint POST
-// dla dodawania nowego uzytkownika
+// Endpoint POST dla dodawania nowego użytkownika
 router.post("/register", async (req, res) => {
   const { name, surname, email, password } = req.body;
-
-  if (!email || !password) {
-    // wartosci usuniete !name || !surname ||
+  console.log(req.body);
+  // Sprawdzenie, czy przesłano wymagane dane
+  if (!name || !surname || !email || !password) {
     return res.status(400).json({ error: "Brak wymaganych danych" });
   }
 
-  // Atrybuty użytkownika do zarejestrowania
-  const attributeList = [
-    // new CognitoUserAttribute({ Name: "name", Value: name }),
-    // new CognitoUserAttribute({ Name: "surname", Value: surname }),
-    new CognitoUserAttribute({ Name: "email", Value: email }),
-  ];
+  try {
+    // Rejestracja użytkownika w puli Cognito
+    userPool.signUp(email, password, null, null, async (err, result) => {
+      if (err) {
+        console.error("Błąd rejestracji użytkownika:", err);
+        return res
+          .status(500)
+          .json({ error: "Błąd serwera", details: err.message });
+      }
 
-  // Rejestracja użytkownika w puli Cognito
-  userPool.signUp(email, password, attributeList, null, (err, result) => {
-    if (err) {
-      console.error("Błąd rejestracji użytkownika:", err);
-      return res
-        .status(500)
-        .json({ error: "Błąd serwera", details: err.message });
-    }
-    // Jeśli rejestracja przebiegła pomyślnie
-    res.json({ message: "Użytkownik zarejestrowany pomyślnie", result });
-  });
+      // Jeśli rejestracja w Cognito przebiegła pomyślnie, zapisz informacje o użytkowniku w twojej bazie danych
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await connection.query(
+        `INSERT INTO public.${from} (name, surname, email, password) VALUES ('${name}', '${surname}', '${email}', '${hashedPassword}')`
+      );
+
+      // Zwróć potwierdzenie rejestracji
+      res.json({ message: "Użytkownik zarejestrowany pomyślnie", result });
+    });
+  } catch (error) {
+    console.error("Błąd rejestracji użytkownika:", error);
+    res.status(500).json({ error: "Błąd serwera", details: error.message });
+  }
 });
 // Weryfikacja email
 router.post("/check-email", async (req, res) => {
