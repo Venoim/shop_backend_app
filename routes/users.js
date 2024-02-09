@@ -1,6 +1,12 @@
 import express from "express";
 import { connectToDB, connection } from "../conectDB.js";
-// import bcrypt from "bcrypt";
+import {
+  AuthenticationDetails,
+  CognitoUserAttribute,
+  CognitoUser,
+  CognitoUserPool,
+} from "amazon-cognito-identity-js";
+import { userPool } from "../config/config.js";
 
 const router = express.Router();
 
@@ -48,24 +54,32 @@ router.get("/:id", async (req, res) => {
 
 // Endpoint POST
 // dla dodawania nowego uzytkownika
-router.post("/", async (req, res) => {
+router.post("/register", async (req, res) => {
   const { name, surname, email, password } = req.body;
 
-  if (!name || !surname || !email || !password) {
+  if (!email || !password) {
+    // wartosci usuniete !name || !surname ||
     return res.status(400).json({ error: "Brak wymaganych danych" });
   }
-  try {
-    //zabzpieczenie hasla przed zapisem do BD
-    // const hashedPassword = await bcrypt.hash(password, 10);
 
-    await connection.query(
-      `INSERT INTO public.${from} (name, surname, email, password) VALUES ('${name}', '${surname}', '${email}', '${password}')`
-    );
-    res.json({ message: "Uzytkownik dodany pomyślnie" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Błąd serwera", error });
-  }
+  // Atrybuty użytkownika do zarejestrowania
+  const attributeList = [
+    // new CognitoUserAttribute({ Name: "name", Value: name }),
+    // new CognitoUserAttribute({ Name: "surname", Value: surname }),
+    new CognitoUserAttribute({ Name: "email", Value: email }),
+  ];
+
+  // Rejestracja użytkownika w puli Cognito
+  userPool.signUp(email, password, attributeList, null, (err, result) => {
+    if (err) {
+      console.error("Błąd rejestracji użytkownika:", err);
+      return res
+        .status(500)
+        .json({ error: "Błąd serwera", details: err.message });
+    }
+    // Jeśli rejestracja przebiegła pomyślnie
+    res.json({ message: "Użytkownik zarejestrowany pomyślnie", result });
+  });
 });
 // wefyfikacja meila
 router.post("/check-email", async (req, res) => {
@@ -82,61 +96,69 @@ router.post("/check-email", async (req, res) => {
     res.status(500).json({ error: "Błąd serwera", details: error.message });
   }
 });
-// logowanie użytkownika
-router.post("/login", async (req, res) => {
+
+// Endpoint do potwierdzenia adresu e-mail użytkownika
+router.post("/confirm-email", async (req, res) => {
+  const { email, confirmationCode } = req.body; // Pobranie adresu e-mail użytkownika i kodu potwierdzenia z zapytania
+
+  if (!email || !confirmationCode) {
+    return res.status(400).json({ error: "Brak wymaganych danych" });
+  }
+
+  // Tworzenie obiektu użytkownika Cognito
+  const user = {
+    Username: email,
+    Pool: userPool,
+  };
+
+  // Potwierdzenie adresu e-mail użytkownika przy użyciu kodu potwierdzenia
+  userPool.confirmSignUp(email, confirmationCode, null, (err, result) => {
+    if (err) {
+      console.error("Błąd potwierdzenia adresu e-mail:", err);
+      return res
+        .status(500)
+        .json({ error: "Błąd serwera", details: err.message });
+    }
+
+    // Jeśli potwierdzenie przebiegło pomyślnie
+    res.json({
+      message: "Adres e-mail użytkownika został potwierdzony pomyślnie",
+      result,
+    });
+  });
+});
+
+// Endpoint POST dla logowania użytkownika
+router.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Brak wymaganych danych logowania" });
-  }
+  // Tworzenie obiektu Authentication Details
+  const authenticationDetails = new AuthenticationDetails({
+    Username: email,
+    Password: password,
+  });
 
-  try {
-    const result = await connection.query(
-      `SELECT * FROM public.${from} WHERE email = '${email}'`
-    );
+  // Tworzenie obiektu użytkownika Cognito
+  const userData = {
+    Username: email,
+    Pool: userPool,
+  };
+  const cognitoUser = new CognitoUser(userData);
 
-    if (result.rows.length > 0) {
-      const user = {
-        password: result.rows[0][4],
-      };
-      if (user.password) {
-        // Sprawdź hasło
-        console.log("Przesłane dane:", email, password);
-        console.log("Zapisane hasło w bazie danych:", user.password);
-
-        const isPasswordValid = user.password === password;
-
-        if (isPasswordValid) {
-          // Hasła są identyczne
-          const { password, ...userDataWithoutPassword } = user;
-
-          const dataUser = result.rows.map((item) => ({
-            id: item[0],
-            name: item[1],
-            surname: item[2],
-            email: item[3],
-            password: item[4], //do usuniecia
-          }));
-          res.json(dataUser); //userDataWithoutPassword
-        } else {
-          // Hasła się nie zgadzają
-          res.status(401).json({ error: "Błędne dane logowania" });
-        }
-      } else {
-        // Użytkownik istnieje, ale brak hasła w bazie danych
-        res.status(500).json({
-          error: "Błąd serwera",
-          details: "Brak hasła w bazie danych",
-        });
-      }
-    } else {
-      // Użytkownik nie znaleziony
-      res.status(404).json({ error: "Użytkownik nie znaleziony" });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Błąd serwera", details: error.message });
-  }
+  // Autoryzacja użytkownika
+  cognitoUser.authenticateUser(authenticationDetails, {
+    onSuccess: (result) => {
+      // Pomyślne zalogowanie użytkownika
+      const accessToken = result.getAccessToken().getJwtToken();
+      const idToken = result.getIdToken().getJwtToken();
+      res.json({ accessToken, idToken });
+    },
+    onFailure: (err) => {
+      // Błąd podczas logowania użytkownika
+      console.error("Błąd logowania użytkownika:", err);
+      res.status(401).json({ error: "Błędne dane logowania" });
+    },
+  });
 });
 
 // Endpoint DELETE dla usuwania Uzytkownika

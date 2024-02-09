@@ -9,7 +9,9 @@ import categoriesRoutes from "./routes/categories.js";
 import basketRoutes from "./routes/basket.js";
 
 const app = express();
-app.use(cors()); // Dodaj to jako middleware
+
+app.use(cors());
+
 app.use(bodyParser.json());
 
 app.use("/api/categories", categoriesRoutes);
