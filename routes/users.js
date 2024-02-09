@@ -6,7 +6,7 @@ import {
   CognitoUser,
   CognitoUserPool,
 } from "amazon-cognito-identity-js";
-import { userPool } from "../config/config.js";
+import { userPool, confirmUser } from "../config/config.js";
 
 const router = express.Router();
 
@@ -81,7 +81,7 @@ router.post("/register", async (req, res) => {
     res.json({ message: "Użytkownik zarejestrowany pomyślnie", result });
   });
 });
-// wefyfikacja meila
+// Weryfikacja email
 router.post("/check-email", async (req, res) => {
   try {
     const { email } = req.body;
@@ -106,13 +106,16 @@ router.post("/confirm-email", async (req, res) => {
   }
 
   // Tworzenie obiektu użytkownika Cognito
-  const user = {
+  const userData = {
     Username: email,
     Pool: userPool,
   };
 
+  // Inicjalizacja obiektu CognitoUser
+  const cognitoUser = new CognitoUser(userData);
+
   // Potwierdzenie adresu e-mail użytkownika przy użyciu kodu potwierdzenia
-  userPool.confirmSignUp(email, confirmationCode, null, (err, result) => {
+  cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
     if (err) {
       console.error("Błąd potwierdzenia adresu e-mail:", err);
       return res
