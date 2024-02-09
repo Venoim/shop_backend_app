@@ -161,7 +161,6 @@ router.post("/login", (req, res) => {
       const idToken = result.getIdToken().getJwtToken();
       try {
         const userData = await getUserDataFromDatabase(email, from); // Funkcja do pobrania danych użytkownika z bazy danych
-        console.log(userData);
         res.json({ accessToken, idToken, user: userData }); // Zwrócenie tokenów i danych użytkownika
       } catch (error) {
         console.error("Błąd podczas pobierania danych użytkownika:", error);
@@ -213,12 +212,10 @@ async function getAll(from, connection) {
 
 // Funkcja do pobierania danych użytkownika z bazy danych
 async function getUserDataFromDatabase(email, form) {
-  console.log(email, form);
   try {
     const result = await connection.query(
       `SELECT * FROM public.${form} WHERE email = '${email}'`
     );
-    console.log(result.rows);
     if (result.rows.length > 0) {
       const userData = result.rows.map((item) => ({
         id: item[0],
