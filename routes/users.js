@@ -155,11 +155,18 @@ router.post("/login", (req, res) => {
 
   // Autoryzacja użytkownika
   cognitoUser.authenticateUser(authenticationDetails, {
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       // Pomyślne zalogowanie użytkownika
       const accessToken = result.getAccessToken().getJwtToken();
       const idToken = result.getIdToken().getJwtToken();
-      res.json({ accessToken, idToken });
+      try {
+        const userData = await getUserDataFromDatabase(email, from); // Funkcja do pobrania danych użytkownika z bazy danych
+        console.log(userData);
+        res.json({ accessToken, idToken, user: userData }); // Zwrócenie tokenów i danych użytkownika
+      } catch (error) {
+        console.error("Błąd podczas pobierania danych użytkownika:", error);
+        res.status(500).json({ error: "Błąd serwera", details: error.message });
+      }
     },
     onFailure: (err) => {
       // Błąd podczas logowania użytkownika
@@ -202,6 +209,33 @@ async function getAll(from, connection) {
   }));
   console.log("pobrano:", result);
   return result;
+}
+
+// Funkcja do pobierania danych użytkownika z bazy danych
+async function getUserDataFromDatabase(email, form) {
+  console.log(email, form);
+  try {
+    const result = await connection.query(
+      `SELECT * FROM public.${form} WHERE email = '${email}'`
+    );
+    console.log(result.rows);
+    if (result.rows.length > 0) {
+      const userData = result.rows.map((item) => ({
+        id: item[0],
+        name: item[1],
+        surname: item[2],
+        email: item[3],
+      }));
+      return userData;
+    } else {
+      throw new Error("Użytkownik nie został znaleziony w bazie danych");
+    }
+  } catch (error) {
+    throw new Error(
+      "Błąd podczas pobierania danych użytkownika z bazy danych: " +
+        error.message
+    );
+  }
 }
 
 export default router;
