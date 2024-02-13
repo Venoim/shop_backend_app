@@ -147,11 +147,11 @@ router.post("/login", (req, res) => {
   });
 
   // Tworzenie obiektu użytkownika Cognito
-  const userData = {
+  const cognitoData = {
     Username: email,
     Pool: userPool,
   };
-  const cognitoUser = new CognitoUser(userData);
+  const cognitoUser = new CognitoUser(cognitoData);
 
   // Autoryzacja użytkownika
   cognitoUser.authenticateUser(authenticationDetails, {
@@ -171,9 +171,13 @@ router.post("/login", (req, res) => {
             `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id_cognito}')`
           );
         }
-
+        const userData = existingUser[0];
         // Zwróć tokeny i dane użytkownika
-        res.json({ accessToken, idToken, user: { email } });
+        res.json({
+          accessToken,
+          idToken,
+          userData,
+        });
       } catch (error) {
         console.error("Błąd podczas logowania użytkownika:", error);
         res.status(500).json({ error: "Błąd serwera", details: error.message });
@@ -235,9 +239,9 @@ async function getUserDataFromDatabase(email, form) {
         surname: item[2],
         email: item[3],
       }));
-      return userData[0]; // Zwróć pierwszy znaleziony rekord użytkownika
+      return userData;
     } else {
-      return null; // Zwróć null, jeśli użytkownik nie został znaleziony w bazie danych
+      return null;
     }
   } catch (error) {
     throw new Error(
