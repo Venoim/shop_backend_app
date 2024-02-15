@@ -11,7 +11,6 @@ await connectToDB();
 
 // Endpoint dodawanie do kosza
 router.post("/add", async (req, res) => {
-  console.log(req.body);
   try {
     const { userId, productId, quantity } = req.body;
 
