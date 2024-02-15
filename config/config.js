@@ -34,4 +34,4 @@ const confirmUser = (username, confirmationCode) => {
   });
 };
 
-export { port, userPool };
+export { port, userPool, confirmUser };

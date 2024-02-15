@@ -1,5 +1,6 @@
 import express from "express";
 import { connectToDB, connection } from "../conectDB.js";
+// import bcrypt from "bcrypt";
 import {
   AuthenticationDetails,
   CognitoUserAttribute,
@@ -52,36 +53,40 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Endpoint POST
-// dla dodawania nowego uzytkownika
+// Endpoint POST dla dodawania nowego użytkownika
 router.post("/register", async (req, res) => {
-  const { name, surname, email, password } = req.body;
-
+  const { email, password } = req.body;
+  console.log(req.body);
+  // Sprawdzenie, czy przesłano wymagane dane
   if (!email || !password) {
-    // wartosci usuniete !name || !surname ||
     return res.status(400).json({ error: "Brak wymaganych danych" });
   }
 
-  // Atrybuty użytkownika do zarejestrowania
-  const attributeList = [
-    // new CognitoUserAttribute({ Name: "name", Value: name }),
-    // new CognitoUserAttribute({ Name: "surname", Value: surname }),
-    new CognitoUserAttribute({ Name: "email", Value: email }),
-  ];
+  try {
+    // Rejestracja użytkownika w puli Cognito
+    userPool.signUp(email, password, null, null, async (err, result) => {
+      if (err) {
+        console.error("Błąd rejestracji użytkownika:", err);
+        return res
+          .status(500)
+          .json({ error: "Błąd serwera", details: err.message });
+      }
 
-  // Rejestracja użytkownika w puli Cognito
-  userPool.signUp(email, password, attributeList, null, (err, result) => {
-    if (err) {
-      console.error("Błąd rejestracji użytkownika:", err);
-      return res
-        .status(500)
-        .json({ error: "Błąd serwera", details: err.message });
-    }
-    // Jeśli rejestracja przebiegła pomyślnie
-    res.json({ message: "Użytkownik zarejestrowany pomyślnie", result });
-  });
+      // Jeśli rejestracja w Cognito przebiegła pomyślnie, zapisz informacje o użytkowniku w twojej bazie danych
+      // const hashedPassword = await bcrypt.hash(password, 10);
+      // await connection.query(
+      //   `INSERT INTO public.${from} (name, surname, email, password) VALUES ('${name}', '${surname}', '${email}', )`
+      // );
+
+      // Zwróć potwierdzenie rejestracji
+      res.json({ message: "Użytkownik zarejestrowany pomyślnie", result });
+    });
+  } catch (error) {
+    console.error("Błąd rejestracji użytkownika:", error);
+    res.status(500).json({ error: "Błąd serwera", details: error.message });
+  }
 });
-// wefyfikacja meila
+// Weryfikacja email
 router.post("/check-email", async (req, res) => {
   try {
     const { email } = req.body;
@@ -106,13 +111,16 @@ router.post("/confirm-email", async (req, res) => {
   }
 
   // Tworzenie obiektu użytkownika Cognito
-  const user = {
+  const userData = {
     Username: email,
     Pool: userPool,
   };
 
+  // Inicjalizacja obiektu CognitoUser
+  const cognitoUser = new CognitoUser(userData);
+
   // Potwierdzenie adresu e-mail użytkownika przy użyciu kodu potwierdzenia
-  userPool.confirmSignUp(email, confirmationCode, null, (err, result) => {
+  cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
     if (err) {
       console.error("Błąd potwierdzenia adresu e-mail:", err);
       return res
@@ -139,19 +147,41 @@ router.post("/login", (req, res) => {
   });
 
   // Tworzenie obiektu użytkownika Cognito
-  const userData = {
+  const cognitoData = {
     Username: email,
     Pool: userPool,
   };
-  const cognitoUser = new CognitoUser(userData);
+  const cognitoUser = new CognitoUser(cognitoData);
 
   // Autoryzacja użytkownika
   cognitoUser.authenticateUser(authenticationDetails, {
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       // Pomyślne zalogowanie użytkownika
       const accessToken = result.getAccessToken().getJwtToken();
       const idToken = result.getIdToken().getJwtToken();
-      res.json({ accessToken, idToken });
+      try {
+        // Sprawdź, czy użytkownik istnieje w bazie danych
+        const existingUser = await getUserDataFromDatabase(email, from);
+
+        if (!existingUser) {
+          // Użytkownik nie istnieje w bazie danych, dodaj go
+          const attributes = result.getIdToken().payload;
+          const id_cognito = attributes.sub;
+          await connection.query(
+            `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id_cognito}')`
+          );
+        }
+        const userData = existingUser[0];
+        // Zwróć tokeny i dane użytkownika
+        res.json({
+          accessToken,
+          idToken,
+          userData,
+        });
+      } catch (error) {
+        console.error("Błąd podczas logowania użytkownika:", error);
+        res.status(500).json({ error: "Błąd serwera", details: error.message });
+      }
     },
     onFailure: (err) => {
       // Błąd podczas logowania użytkownika
@@ -194,6 +224,31 @@ async function getAll(from, connection) {
   }));
   console.log("pobrano:", result);
   return result;
+}
+
+// Funkcja do pobierania danych użytkownika z bazy danych
+async function getUserDataFromDatabase(email, form) {
+  try {
+    const result = await connection.query(
+      `SELECT * FROM public.${form} WHERE email = '${email}'`
+    );
+    if (result.rows.length > 0) {
+      const userData = result.rows.map((item) => ({
+        id: item[0],
+        name: item[1],
+        surname: item[2],
+        email: item[3],
+      }));
+      return userData;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    throw new Error(
+      "Błąd podczas pobierania danych użytkownika z bazy danych: " +
+        error.message
+    );
+  }
 }
 
 export default router;
