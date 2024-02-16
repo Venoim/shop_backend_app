@@ -37,8 +37,8 @@ router.post("/checkout", async (req, res) => {
     const orderId = generateRandomId(8);
     // Przeniesienie produktów z koszyka do zamówienia
     const addOrderQuery = `
-        INSERT INTO ${from} (user_id, product_id, quantity, total_price)
-        SELECT ${user_id}, product_id, quantity, (SELECT price FROM ${product} WHERE id = ${cart}.product_id) * quantity
+        INSERT INTO ${from} (order_id, user_id, product_id, quantity, total_price)
+        SELECT '${orderId}', ${user_id}, product_id, quantity, (SELECT price FROM ${product} WHERE id = ${cart}.product_id) * quantity
         FROM ${cart}
         WHERE user_id = ${user_id};
       `;
