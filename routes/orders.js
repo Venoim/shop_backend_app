@@ -64,8 +64,14 @@ router.post("/checkout", async (req, res) => {
 router.get("/:userId", async (req, res) => {
   try {
     const userId = req.params.userId; // Pobierz id użytkownika z parametru żądania
-    // Wykonaj logikę pobierania zamówień z bazy danych dla danego użytkownika
-    const orders = await connection.query(userId);
+    // Wykonaj zapytanie SQL, aby pobrać zamówienia dla danego użytkownika
+    const ordersQuery = `
+      SELECT * FROM orders
+      WHERE user_id = ${userId};
+    `;
+    const ordersResult = await connection.query(ordersQuery, [userId]);
+    const orders = ordersResult.rows;
+
     res.status(200).json({ success: true, orders });
   } catch (error) {
     console.error("Error fetching orders:", error);
