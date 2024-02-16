@@ -29,11 +29,6 @@ router.post("/checkout", async (req, res) => {
         .json({ success: false, error: "Koszyk jest pusty" });
     }
 
-    // Oblicz łączną kwotę zamówienia
-    // const totalAmount = cartItems.reduce(
-    //   (total, item) => total + item.price * item.quantity,
-    //   0
-    // );
     const orderId = generateRandomId(8);
     // Przeniesienie produktów z koszyka do zamówienia
     const addOrderQuery = `
@@ -63,14 +58,29 @@ router.post("/checkout", async (req, res) => {
 // Endpoint do pobierania wszystkich zamówień użytkownika
 router.get("/:userId", async (req, res) => {
   try {
-    const userId = req.params.userId; // Pobierz id użytkownika z parametru żądania
-    // Wykonaj zapytanie SQL, aby pobrać zamówienia dla danego użytkownika
+    const userId = req.params.userId;
+
     const ordersQuery = `
-      SELECT * FROM orders
-      WHERE user_id = ${userId};
+    SELECT 
+    ${from}.order_id,
+    ${from}.product_id,
+    ${product}.name,
+    ${from}.quantity,
+    ${from}.total_price,
+    ${from}.order_date
+  FROM ${from}
+  JOIN ${product} ON ${from}.product_id = ${product}.id
+  WHERE ${from}.user_id = ${userId};
     `;
-    const ordersResult = await connection.query(ordersQuery, [userId]);
-    const orders = ordersResult.rows;
+    const ordersResult = await connection.query(ordersQuery);
+    const orders = ordersResult.rows.map((order) => ({
+      order_id: order[0],
+      product_id: order[1],
+      product_name: order[2],
+      quantity: order[3],
+      total_price: order[4],
+      order_date: order[5],
+    }));
 
     res.status(200).json({ success: true, orders });
   } catch (error) {
