@@ -161,22 +161,22 @@ router.post("/login", (req, res) => {
       const idToken = result.getIdToken().getJwtToken();
       try {
         // Sprawdź, czy użytkownik istnieje w bazie danych
-        const existingUser = await getUserDataFromDatabase(email, from);
+        let userData = await getUserDataFromDatabase(email, from);
 
-        if (!existingUser) {
+        if (!userData) {
           // Użytkownik nie istnieje w bazie danych, dodaj go
           const attributes = result.getIdToken().payload;
           const id_cognito = attributes.sub;
           await connection.query(
             `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id_cognito}')`
           );
+          userData = await getUserDataFromDatabase(email, from);
         }
-
         // Zwróć tokeny i dane użytkownika
         res.json({
           accessToken,
           idToken,
-          userData: existingUser,
+          userData: userData[0],
         });
       } catch (error) {
         console.error("Błąd podczas logowania użytkownika:", error);
