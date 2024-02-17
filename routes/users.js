@@ -171,12 +171,12 @@ router.post("/login", (req, res) => {
             `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id_cognito}')`
           );
         }
-        const userData = existingUser[0];
+
         // Zwróć tokeny i dane użytkownika
         res.json({
           accessToken,
           idToken,
-          userData,
+          userData: existingUser,
         });
       } catch (error) {
         console.error("Błąd podczas logowania użytkownika:", error);
