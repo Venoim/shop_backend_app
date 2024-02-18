@@ -31,6 +31,7 @@ router.get("/", async (req, res) => {
       name: item[1],
       price: item[2],
       category: item[3],
+      imgUrl: item[5],
     }));
 
     const countResult = await connection.query(countQuery);
@@ -101,6 +102,7 @@ router.get("/category/:categoryId", async (req, res) => {
       name: item[1],
       price: item[2],
       category: item[3],
+      imgUrl: item[5],
     }));
 
     // Dodaj kod do pobrania całkowitej liczby produktów dla danej kategorii

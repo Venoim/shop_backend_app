@@ -191,6 +191,28 @@ router.post("/login", (req, res) => {
   });
 });
 
+// Endpoint do aktualizacji danych użytkownika
+router.put("/:userId", (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const updatedUserData = req.body;
+  console.log(userId);
+
+  // Szukamy użytkownika w bazie danych
+  const userIndex = users.findIndex((user) => user.id === userId);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: "Użytkownik nie został znaleziony." });
+  }
+
+  // Aktualizujemy dane użytkownika
+  users[userIndex] = { ...users[userIndex], ...updatedUserData };
+
+  // Zwracamy zaktualizowane dane użytkownika
+  res.json({
+    message: "Dane użytkownika zostały zaktualizowane.",
+    user: users[userIndex],
+  });
+});
+
 // Endpoint DELETE dla usuwania Uzytkownika
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
