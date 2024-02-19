@@ -211,10 +211,16 @@ router.put("/:userId", async (req, res) => {
         .json({ error: "Użytkownik nie został znaleziony." });
     }
 
-    // Zwracamy zaktualizowane dane użytkownika
+    // Pobierz zaktualizowane dane użytkownika
+    const updatedUser = await getUserDataFromDatabase(
+      updatedUserData.email,
+      "users"
+    );
+    console.log(updatedUser);
+    // Zwróć zaktualizowane dane użytkownika w odpowiedzi
     res.json({
       message: "Dane użytkownika zostały zaktualizowane.",
-      user: result.rows[0],
+      user: updatedUser,
     });
   } catch (error) {
     console.error(
@@ -274,6 +280,8 @@ async function getUserDataFromDatabase(email, form) {
         name: item[1],
         surname: item[2],
         email: item[3],
+        address: item[5],
+        phoneNumber: item[6],
       }));
       return userData;
     } else {
