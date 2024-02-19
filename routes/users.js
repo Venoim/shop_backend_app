@@ -192,25 +192,39 @@ router.post("/login", (req, res) => {
 });
 
 // Endpoint do aktualizacji danych użytkownika
-router.put("/:userId", (req, res) => {
-  const userId = parseInt(req.params.userId);
+router.put("/:userId", async (req, res) => {
+  const userId = req.params.userId;
   const updatedUserData = req.body;
-  console.log(userId);
+  console.log("userId:", userId);
+  console.log("updatedUserData:", updatedUserData);
+  try {
+    // Wykonujemy zapytanie SQL do aktualizacji danych użytkownika
 
-  // Szukamy użytkownika w bazie danych
-  const userIndex = users.findIndex((user) => user.id === userId);
-  if (userIndex === -1) {
-    return res.status(404).json({ error: "Użytkownik nie został znaleziony." });
+    const result = await connection.query(
+      `UPDATE users SET name = '${updatedUserData.name}', surname = '${updatedUserData.surname}', address = '${updatedUserData.address}', phoneNumber = '${updatedUserData.phoneNumber}' WHERE id = ${userId} RETURNING *`
+    );
+    console.log("result:", result);
+    // Sprawdzamy, czy użytkownik został zaktualizowany
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ error: "Użytkownik nie został znaleziony." });
+    }
+
+    // Zwracamy zaktualizowane dane użytkownika
+    res.json({
+      message: "Dane użytkownika zostały zaktualizowane.",
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error(
+      "Wystąpił błąd podczas aktualizacji danych użytkownika:",
+      error
+    );
+    res.status(500).json({
+      error: "Wystąpił błąd podczas aktualizacji danych użytkownika.",
+    });
   }
-
-  // Aktualizujemy dane użytkownika
-  users[userIndex] = { ...users[userIndex], ...updatedUserData };
-
-  // Zwracamy zaktualizowane dane użytkownika
-  res.json({
-    message: "Dane użytkownika zostały zaktualizowane.",
-    user: users[userIndex],
-  });
 });
 
 // Endpoint DELETE dla usuwania Uzytkownika

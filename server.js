@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { port } from "./config/config.js";
 import bodyParser from "body-parser";
-import { connectToDB } from "./conectDB.js";
+// import { connectToDB } from "./conectDB.js";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
 import categoriesRoutes from "./routes/categories.js";
