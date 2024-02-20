@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { port } from "./config/config.js";
 import bodyParser from "body-parser";
-import productsRoutes from "./routes/products.js"; // import endpointow
+import productsRoutes from "./routes/Products/products.controller.js";
 import usersRoutes from "./routes/users.js";
 import categoriesRoutes from "./routes/Categories/categories.controller.js";
 import basketRoutes from "./routes/Basket/basket.controller.js";
