@@ -1,5 +1,5 @@
 import express from "express";
-import { connectToDB, connection } from "../../conectDB.js";
+// import { connectToDB, connection } from "../../conectDB.js";
 import {
   addToBasket,
   removeFromBasket,
@@ -8,7 +8,7 @@ import {
 } from "./basket.service.js";
 const router = express.Router();
 
-await connectToDB();
+// await connectToDB();
 
 router.post("/add", async (req, res) => {
   try {
