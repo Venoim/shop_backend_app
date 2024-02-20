@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 // import { connectToDB } from "./conectDB.js";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
-import categoriesRoutes from "./routes/Categories/categories.js";
+import categoriesRoutes from "./routes/Categories/categories.controlle.js";
 import basketRoutes from "./routes/Basket/basket.controller.js";
 import ordersRoutes from "./routes/orders.js";
 
