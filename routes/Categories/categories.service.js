@@ -1,4 +1,4 @@
-import { connection } from "../../conectDB.js";
+import { connection } from "../../connectDB.js";
 
 const from = "productCategories";
 
