@@ -3,7 +3,7 @@ import cors from "cors";
 import { port } from "./config/config.js";
 import bodyParser from "body-parser";
 import productsRoutes from "./routes/Products/products.controller.js";
-import usersRoutes from "./routes/users.js";
+import usersRoutes from "./routes/Users/users.controller.js";
 import categoriesRoutes from "./routes/Categories/categories.controller.js";
 import basketRoutes from "./routes/Basket/basket.controller.js";
 import ordersRoutes from "./routes/Orders/orders.controller.js";
