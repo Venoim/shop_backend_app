@@ -1,12 +1,5 @@
 import express from "express";
 import { connectToDB, connection } from "../../connectDB.js";
-// import {
-//   AuthenticationDetails,
-//   CognitoUserAttribute,
-//   CognitoUser,
-//   CognitoUserPool,
-// } from "amazon-cognito-identity-js";
-// import { userPool } from "../../config/config.js";
 import {
   getAllUsers,
   getUserById,
@@ -20,7 +13,6 @@ import {
 
 const router = express.Router();
 
-// const from = "users";
 await connectToDB();
 
 router.get("/", async (req, res) => {
