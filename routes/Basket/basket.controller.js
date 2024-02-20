@@ -1,6 +1,11 @@
 import express from "express";
-import { connectToDB, connection } from "../conectDB.js";
-
+import { connectToDB, connection } from "../../conectDB.js";
+import {
+  addToBasket,
+  removeFromBasket,
+  updateBasket,
+  getBasketItems,
+} from "./basket.service.js";
 const router = express.Router();
 
 const from = "basket";
@@ -14,25 +19,41 @@ router.post("/add", async (req, res) => {
   try {
     const { userId, productId, quantity } = req.body;
 
-    // Sprawdź, czy użytkownik i produkt istnieją w bazie danych
-    const userQuery = `SELECT * FROM public.${user} WHERE id = ${userId}`;
-    const productQuery = `SELECT * FROM public.${product} WHERE id = ${productId}`;
-    const userResult = await connection.query(userQuery);
-    const productResult = await connection.query(productQuery);
+    // // Sprawdź, czy użytkownik i produkt istnieją w bazie danych
+    // const userQuery = `SELECT * FROM public.${user} WHERE id = ${userId}`;
+    // const productQuery = `SELECT * FROM public.${product} WHERE id = ${productId}`;
+    // const userResult = await connection.query(userQuery);
+    // const productResult = await connection.query(productQuery);
 
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // if (userResult.rows.length === 0) {
+    //   return res.status(404).json({ message: "User not found" });
+    // }
 
-    if (productResult.rows.length === 0) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    // if (productResult.rows.length === 0) {
+    //   return res.status(404).json({ message: "Product not found" });
+    // }
 
-    // Dodaj produkt do koszyka
-    const insertQuery = `INSERT INTO public.${from} (user_id, product_id, quantity) VALUES (${userId}, ${productId}, ${quantity})`;
-    await connection.query(insertQuery);
+    // // Sprawdź, czy produkt jest już w koszyku użytkownika
+    // const checkProductQuery = `SELECT * FROM public.${from} WHERE user_id = ${userId} AND product_id = ${productId}`;
+    // const checkProductResult = await connection.query(checkProductQuery);
 
-    res.status(201).json({ message: "Product added to basket successfully" });
+    // if (checkProductResult.rows.length > 0) {
+    //   // Jeśli produkt jest już w koszyku, zwiększ jego ilość o 1
+    //   const updateQuantityQuery = `UPDATE public.${from} SET quantity = quantity + 1 WHERE user_id = ${userId} AND product_id = ${productId}`;
+    //   await connection.query(updateQuantityQuery);
+
+    //   return res
+    //     .status(200)
+    //     .json({ message: "Product quantity updated in basket" });
+    // }
+
+    // // Jeśli produkt nie jest w koszyku, dodaj go
+    // const insertQuery = `INSERT INTO public.${from} (user_id, product_id, quantity) VALUES (${userId}, ${productId}, ${quantity})`;
+    // await connection.query(insertQuery);
+
+    // res.status(201).json({ message: "Product added to basket successfully" });
+    const message = await addToBasket(userId, productId, quantity);
+    res.status(201).json({ message });
   } catch (error) {
     console.error("Error adding product to basket:", error);
     res.status(500).json({ message: "Internal server error" });

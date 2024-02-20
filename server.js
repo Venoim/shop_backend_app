@@ -6,7 +6,7 @@ import bodyParser from "body-parser";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
 import categoriesRoutes from "./routes/categories.js";
-import basketRoutes from "./routes/basket.js";
+import basketRoutes from "./routes/Basket/basket.controller.js";
 import ordersRoutes from "./routes/orders.js";
 
 const app = express();
