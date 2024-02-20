@@ -1,5 +1,5 @@
 import express from "express";
-import { connectToDB, connection } from "../conectDB.js";
+import { connectToDB, connection } from "../connectDB.js";
 // import bcrypt from "bcrypt";
 import {
   AuthenticationDetails,

@@ -2,12 +2,11 @@ import express from "express";
 import cors from "cors";
 import { port } from "./config/config.js";
 import bodyParser from "body-parser";
-// import { connectToDB } from "./conectDB.js";
 import productsRoutes from "./routes/products.js"; // import endpointow
 import usersRoutes from "./routes/users.js";
-import categoriesRoutes from "./routes/Categories/categories.controlle.js";
+import categoriesRoutes from "./routes/Categories/categories.controller.js";
 import basketRoutes from "./routes/Basket/basket.controller.js";
-import ordersRoutes from "./routes/orders.js";
+import ordersRoutes from "./routes/Orders/orders.controller.js";
 
 const app = express();
 
