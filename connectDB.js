@@ -3,15 +3,14 @@ import dbConfig from "./config/dbConfig.js";
 
 const connection = new Connection(dbConfig);
 
-const connectToDB = async () => {
+const getConnection = async () => {
   try {
     await connection.connect();
-    console.log("Jest polaczenie z BD");
     return connection;
   } catch (error) {
     console.error("Błąd połączenia z BD:", error);
+    throw error;
   }
-  throw error;
 };
 
-export { connectToDB, connection };
+export { getConnection };

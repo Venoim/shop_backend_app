@@ -1,5 +1,5 @@
 import express from "express";
-import { connectToDB, connection } from "../../connectDB.js";
+// import { getConnection } from "../../connectDB.js";
 import {
   getAllUsers,
   getUserById,
@@ -12,8 +12,6 @@ import {
 } from "./users.service.js";
 
 const router = express.Router();
-
-await connectToDB();
 
 router.get("/", async (req, res) => {
   try {

@@ -1,4 +1,4 @@
-import { connection } from "../../connectDB.js";
+import { getConnection } from "../../connectDB.js";
 
 const from = "orders";
 const user = "users";
@@ -7,6 +7,7 @@ const cart = "basket";
 
 export const checkout = async (userId) => {
   try {
+    const connection = await getConnection();
     const cartItemsQuery = `SELECT * FROM ${cart} WHERE user_id = ${userId}`;
     const cartItemsResult = await connection.query(cartItemsQuery);
     const cartItems = cartItemsResult.rows;
@@ -35,6 +36,7 @@ export const checkout = async (userId) => {
 };
 
 export const getUserOrders = async (userId) => {
+  const connection = await getConnection();
   try {
     const ordersQuery = `
       SELECT 

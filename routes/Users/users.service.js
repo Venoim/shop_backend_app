@@ -1,4 +1,4 @@
-import { connection } from "../../connectDB.js";
+import { getConnection } from "../../connectDB.js";
 import { userPool } from "../../config/config.js";
 import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
 
@@ -6,6 +6,7 @@ const from = "users";
 
 export const getAllUsers = async () => {
   try {
+    const connection = await getConnection();
     const data = await getAll(from, connection);
     return data;
   } catch (error) {
@@ -15,6 +16,7 @@ export const getAllUsers = async () => {
 
 export const getUserById = async (id) => {
   try {
+    const connection = await getConnection();
     const sql = await connection.query(
       `SELECT * FROM public.${from} WHERE id = ${id};`
     );
@@ -48,6 +50,7 @@ export const registerUser = async (email, password) => {
 
 export const checkEmailExists = async (email) => {
   try {
+    const connection = await getConnection();
     const result = await connection.query(
       `SELECT * FROM public.${from} WHERE email = '${email}'`
     );
@@ -95,6 +98,7 @@ export const loginUser = async (email, password, res) => {
         let userData = await getUserDataFromDatabase(email, from);
 
         if (!userData) {
+          const connection = await getConnection();
           const attributes = result.getIdToken().payload;
           const id_cognito = attributes.sub;
           await connection.query(
@@ -122,6 +126,7 @@ export const loginUser = async (email, password, res) => {
 
 export const updateUser = async (userId, updatedUserData) => {
   try {
+    const connection = await getConnection();
     const result = await connection.query(
       `UPDATE users SET name = '${updatedUserData.name}', surname = '${updatedUserData.surname}', address = '${updatedUserData.address}', phoneNumber = '${updatedUserData.phoneNumber}' WHERE id = ${userId} RETURNING *`
     );
@@ -143,6 +148,7 @@ export const updateUser = async (userId, updatedUserData) => {
 
 export const deleteUser = async (userId) => {
   try {
+    const connection = await getConnection();
     const result = await connection.query(
       `DELETE FROM public.${from} WHERE id = ${userId};`
     );
@@ -170,6 +176,7 @@ async function getAll(from, connection) {
 
 async function getUserDataFromDatabase(email, form) {
   try {
+    const connection = await getConnection();
     const result = await connection.query(
       `SELECT * FROM public.${form} WHERE email = '${email}'`
     );

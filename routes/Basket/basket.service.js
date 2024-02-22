@@ -1,10 +1,11 @@
-import { connection } from "../../connectDB.js";
+import { getConnection } from "../../connectDB.js";
 
 const from = "basket";
 const user = "users";
 const product = "products";
 
 export const addToBasket = async (userId, productId, quantity) => {
+  const connection = await getConnection();
   const userQuery = `SELECT * FROM public.${user} WHERE id = ${userId}`;
   const productQuery = `SELECT * FROM public.${product} WHERE id = ${productId}`;
   const userResult = await connection.query(userQuery);
@@ -33,18 +34,21 @@ export const addToBasket = async (userId, productId, quantity) => {
 };
 
 export const removeFromBasket = async (basketId) => {
+  const connection = await getConnection();
   const deleteQuery = `DELETE FROM public.${from} WHERE basket_id = ${basketId}`;
   await connection.query(deleteQuery);
   return "Product removed from basket successfully";
 };
 
 export const updateBasket = async (basketId, newQuantity) => {
+  const connection = await getConnection();
   const updateQuery = `UPDATE public.${from} SET quantity = ${newQuantity} WHERE basket_id = ${basketId}`;
   await connection.query(updateQuery);
   return "Basket updated successfully";
 };
 
 export const getBasketItems = async (userId) => {
+  const connection = await getConnection();
   const query = `
     SELECT ${from}.basket_id, products.name, products.price, ${from}.quantity
     FROM public.${from}

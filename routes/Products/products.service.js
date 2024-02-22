@@ -1,9 +1,10 @@
-import { connection } from "../../connectDB.js";
+import { getConnection } from "../../connectDB.js";
 
 const from = "products";
 
 export const getAllProducts = async (limit, page) => {
   try {
+    const connection = await getConnection();
     let query = `SELECT * FROM public.${from}`;
     const countQuery = `SELECT COUNT(*) FROM public.${from}`;
 
@@ -36,6 +37,7 @@ export const getAllProducts = async (limit, page) => {
 
 export const getProductById = async (id) => {
   try {
+    const connection = await getConnection();
     const sql = await connection.query(
       `SELECT * FROM public.${from} WHERE id = ${id};`
     );
@@ -59,6 +61,7 @@ export const getProductById = async (id) => {
 
 export const getProductsByCategory = async (categoryId, limit, page) => {
   try {
+    const connection = await getConnection();
     let query = `SELECT * FROM public.${from}`;
 
     if (categoryId !== "null") {
@@ -100,6 +103,7 @@ export const getProductsByCategory = async (categoryId, limit, page) => {
 
 export const addProduct = async (id, name, price) => {
   try {
+    const connection = await getConnection();
     if (!name || !price || price <= 0) {
       throw new Error("Invalid data");
     }
@@ -114,6 +118,7 @@ export const addProduct = async (id, name, price) => {
 
 export const deleteProduct = async (id) => {
   try {
+    const connection = await getConnection();
     const result = await connection.query(
       `DELETE FROM public.${from} WHERE id = ${id};`
     );

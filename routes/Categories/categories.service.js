@@ -1,9 +1,10 @@
-import { connection } from "../../connectDB.js";
+import { getConnection } from "../../connectDB.js";
 
 const from = "productCategories";
 
 export const getAllCategories = async () => {
   try {
+    const connection = await getConnection();
     const sql = `SELECT * FROM public."${from}";`;
     const res = await connection.query(sql);
     return res.rows.map((item) => ({

@@ -27,10 +27,10 @@ app.use("/api/orders", ordersRoutes);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
-    error: "Błąd serwera server.js status:500",
+    error: "Server error status:500",
   });
 });
 
 app.listen(port, () => {
-  console.log("server start");
+  console.log(`Starting server on port: ${port} 🚀`);
 });
