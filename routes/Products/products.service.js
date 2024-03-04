@@ -47,8 +47,8 @@ export const getProductById = async (id) => {
         name: item[1],
         price: item[2],
         category: item[3],
-        description: item[4],
-        imgUrl: item[5],
+        imgUrl: item[4],
+        description: item[5],
       }));
       return result;
     } else {
