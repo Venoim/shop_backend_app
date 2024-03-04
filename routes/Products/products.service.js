@@ -23,7 +23,7 @@ export const getAllProducts = async (limit, page) => {
       name: item[1],
       price: item[2],
       category: item[3],
-      imgUrl: item[5],
+      imgUrl: item[4],
     }));
 
     const countResult = await connection.query(countQuery);
@@ -81,7 +81,7 @@ export const getProductsByCategory = async (categoryId, limit, page) => {
       name: item[1],
       price: item[2],
       category: item[3],
-      imgUrl: item[5],
+      imgUrl: item[4],
     }));
 
     let countQuery = `SELECT COUNT(*) FROM public.${from}`;
