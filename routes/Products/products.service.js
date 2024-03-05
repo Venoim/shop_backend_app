@@ -65,11 +65,10 @@ export const getProductsByCategory = async (categoryId, limit, page) => {
     let query = `SELECT * FROM public.${from}`;
 
     if (categoryId !== "null") {
-      query += ` WHERE "categoriesId" = ${categoryId}`;
+      query += ` WHERE "category_id" = ${categoryId}`;
     } else {
-      query += ` WHERE "categoriesId" IS NULL`;
+      query += ` WHERE "category_id" IS NULL`;
     }
-
     if (limit && page) {
       const offset = (parseInt(page) - 1) * parseInt(limit);
       query += ` LIMIT ${parseInt(limit)} OFFSET ${offset}`;
@@ -83,13 +82,13 @@ export const getProductsByCategory = async (categoryId, limit, page) => {
       category: item[3],
       imgUrl: item[4],
     }));
-
+    console.log(data);
     let countQuery = `SELECT COUNT(*) FROM public.${from}`;
 
     if (categoryId !== "null") {
-      countQuery += ` WHERE "categoriesId" = ${categoryId}`;
+      countQuery += ` WHERE "category_id" = ${categoryId}`;
     } else {
-      countQuery += ` WHERE "categoriesId" IS NULL`;
+      countQuery += ` WHERE "category_id" IS NULL`;
     }
 
     const countResult = await connection.query(countQuery);
