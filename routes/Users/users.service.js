@@ -167,9 +167,9 @@ async function getAll(from, connection) {
   const res = await connection.query(sql);
   const result = res.rows.map((item) => ({
     id: item[0],
-    name: item[1],
-    surname: item[2],
-    email: item[3],
+    email: item[1],
+    name: item[3],
+    surname: item[4],
   }));
   return result;
 }
@@ -183,9 +183,9 @@ async function getUserDataFromDatabase(email, form) {
     if (result.rows.length > 0) {
       const userData = result.rows.map((item) => ({
         id: item[0],
-        name: item[1],
-        surname: item[2],
-        email: item[3],
+        email: item[1],
+        name: item[3],
+        surname: item[4],
         address: item[5],
         phoneNumber: item[6],
       }));
