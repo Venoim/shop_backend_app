@@ -33,16 +33,16 @@ export const addToBasket = async (userId, productId, quantity) => {
   return "Product added to basket successfully";
 };
 
-export const removeFromBasket = async (basketId) => {
+export const removeFromBasket = async (userId, productId) => {
   const connection = await getConnection();
-  const deleteQuery = `DELETE FROM public.${from} WHERE basket_id = ${basketId}`;
+  const deleteQuery = `DELETE FROM public.${from} WHERE user_id = ${userId} AND product_id = ${productId}`;
   await connection.query(deleteQuery);
   return "Product removed from basket successfully";
 };
 
-export const updateBasket = async (basketId, newQuantity) => {
+export const updateBasket = async (userId, productId, newQuantity) => {
   const connection = await getConnection();
-  const updateQuery = `UPDATE public.${from} SET quantity = ${newQuantity} WHERE basket_id = ${basketId}`;
+  const updateQuery = `UPDATE public.${from} SET quantity = ${newQuantity} WHERE user_id = ${userId} AND product_id = ${productId}`;
   await connection.query(updateQuery);
   return "Basket updated successfully";
 };
@@ -50,7 +50,7 @@ export const updateBasket = async (basketId, newQuantity) => {
 export const getBasketItems = async (userId) => {
   const connection = await getConnection();
   const query = `
-    SELECT ${from}.basket_id, products.name, products.price, ${from}.quantity
+    SELECT products.id ,products.name, products.price, ${from}.quantity
     FROM public.${from}
     INNER JOIN products ON ${from}.product_id = products.id
     WHERE ${from}.user_id = ${userId}

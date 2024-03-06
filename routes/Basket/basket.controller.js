@@ -21,10 +21,10 @@ router.post("/add", async (req, res) => {
   }
 });
 
-router.delete("/remove/:basketId", async (req, res) => {
+router.delete("/remove/:userId/:productId", async (req, res) => {
   try {
-    const basketId = req.params.basketId;
-    const message = await removeFromBasket(basketId);
+    const { userId, productId } = req.params;
+    const message = await removeFromBasket(userId, productId);
     res.status(200).json({ message });
   } catch (error) {
     console.error("Error removing product from basket:", error);
@@ -32,11 +32,11 @@ router.delete("/remove/:basketId", async (req, res) => {
   }
 });
 
-router.put("/update/:basketId", async (req, res) => {
+router.put("/update/", async (req, res) => {
   try {
-    const basketId = req.params.basketId;
+    const { userId, productId } = req.body;
     const newQuantity = req.body.quantity;
-    const message = await updateBasket(basketId, newQuantity);
+    const message = await updateBasket(userId, productId, newQuantity);
     res.status(200).json({ message });
   } catch (error) {
     console.error("Error updating basket:", error);
