@@ -117,7 +117,7 @@ export const loginUser = async (email, password, res) => {
     if (!userData) {
       const connection = await getConnection();
       const { id, email } = data.user;
-      console.log(id, email);
+
       await connection.query(
         `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id}')`
       );
