@@ -5,7 +5,7 @@ import {
   getUserById,
   registerUser,
   checkEmailExists,
-  confirmEmail,
+  // confirmEmail,
   loginUser,
   updateUser,
   deleteUser,
@@ -58,17 +58,17 @@ router.post("/check-email", async (req, res) => {
   }
 });
 
-router.post("/confirm-email", async (req, res) => {
-  const { email, confirmationCode } = req.body;
-  try {
-    await confirmEmail(email, confirmationCode);
-    res.json({ message: "Email confirmed successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: error.message });
-  }
-});
+// router.post("/confirm-email", async (req, res) => {
+//   const { email, confirmationCode } = req.body;
+//   try {
+//     await confirmEmail(email, confirmationCode);
+//     res.json({ message: "Email confirmed successfully" });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ error: "Internal Server Error", details: error.message });
+//   }
+// });
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;

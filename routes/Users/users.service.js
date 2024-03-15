@@ -1,6 +1,7 @@
 import { getConnection } from "../../connectDB.js";
-import { userPool } from "../../config/config.js";
-import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
+// import { userPool } from "../../config/config.js";
+// import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
+import { supabase } from "../../config/config.js";
 
 const from = "users";
 
@@ -37,16 +38,32 @@ export const getUserById = async (id) => {
 };
 
 export const registerUser = async (email, password) => {
-  return new Promise((resolve, reject) => {
-    userPool.signUp(email, password, null, null, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
+  try {
+    const { user, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
     });
-  });
+    if (error) {
+      throw new Error(`Error registering user: ${error.message}`);
+    }
+    return user;
+  } catch (error) {
+    throw new Error(`Error registering user: ${error.message}`);
+  }
 };
+
+// AWS
+// export const registerUser = async (email, password) => {
+//   return new Promise((resolve, reject) => {
+//     userPool.signUp(email, password, null, null, (err, result) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(result);
+//       }
+//     });
+//   });
+// };
 
 export const checkEmailExists = async (email) => {
   try {
@@ -60,69 +77,110 @@ export const checkEmailExists = async (email) => {
   }
 };
 
-export const confirmEmail = async (email, confirmationCode) => {
-  const userData = {
-    Username: email,
-    Pool: userPool,
-  };
-  const cognitoUser = new CognitoUser(userData);
+// AWS
+// export const confirmEmail = async (email, confirmationCode) => {
+//   const userData = {
+//     Username: email,
+//     Pool: userPool,
+//   };
+//   const cognitoUser = new CognitoUser(userData);
 
-  return new Promise((resolve, reject) => {
-    cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
-    });
-  });
-};
+//   return new Promise((resolve, reject) => {
+//     cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(result);
+//       }
+//     });
+//   });
+// };
 
 export const loginUser = async (email, password, res) => {
-  const authenticationDetails = new AuthenticationDetails({
-    Username: email,
-    Password: password,
-  });
+  try {
+    // User login using email address and password
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-  const cognitoData = {
-    Username: email,
-    Pool: userPool,
-  };
-  const cognitoUser = new CognitoUser(cognitoData);
+    if (error) {
+      console.error("User login error:", error);
+      res.status(401).json({ error: "Invalid login details" });
+      return;
+    }
 
-  cognitoUser.authenticateUser(authenticationDetails, {
-    onSuccess: async (result) => {
-      const accessToken = result.getAccessToken().getJwtToken();
-      const idToken = result.getIdToken().getJwtToken();
-      try {
-        let userData = await getUserDataFromDatabase(email, from);
+    // We check whether the user exists in our database
+    let userData = await getUserDataFromDatabase(email, from);
 
-        if (!userData) {
-          const connection = await getConnection();
-          const attributes = result.getIdToken().payload;
-          const id_cognito = attributes.sub;
-          await connection.query(
-            `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id_cognito}')`
-          );
-          userData = await getUserDataFromDatabase(email, from);
-        }
+    // If the user does not exist in the database, we add him
+    if (!userData) {
+      const connection = await getConnection();
+      const { id, email } = data.user;
+      console.log(id, email);
+      await connection.query(
+        `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id}')`
+      );
+      userData = await getUserDataFromDatabase(email, from);
+    }
 
-        res.json({
-          accessToken,
-          idToken,
-          userData: userData[0],
-        });
-      } catch (error) {
-        console.error("Błąd podczas logowania użytkownika:", error);
-        res.status(500).json({ error: "Błąd serwera", details: error.message });
-      }
-    },
-    onFailure: (err) => {
-      console.error("Błąd logowania użytkownika:", err);
-      res.status(401).json({ error: "Błędne dane logowania" });
-    },
-  });
+    // Return user and session data
+    res.json({
+      session: data.session,
+      userData: userData[0],
+    });
+  } catch (error) {
+    console.error("User login error:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
 };
+
+// AWS
+// export const loginUser = async (email, password, res) => {
+//   const authenticationDetails = new AuthenticationDetails({
+//     Username: email,
+//     Password: password,
+//   });
+
+//   const cognitoData = {
+//     Username: email,
+//     Pool: userPool,
+//   };
+//   const cognitoUser = new CognitoUser(cognitoData);
+
+//   cognitoUser.authenticateUser(authenticationDetails, {
+//     onSuccess: async (result) => {
+//       const accessToken = result.getAccessToken().getJwtToken();
+//       const idToken = result.getIdToken().getJwtToken();
+//       try {
+//         let userData = await getUserDataFromDatabase(email, from);
+
+//         if (!userData) {
+//           const connection = await getConnection();
+//           const attributes = result.getIdToken().payload;
+//           const id_cognito = attributes.sub;
+//           await connection.query(
+//             `INSERT INTO public.${from} (email, id_cognito) VALUES ('${email}', '${id_cognito}')`
+//           );
+//           userData = await getUserDataFromDatabase(email, from);
+//         }
+
+//         res.json({
+//           accessToken,
+//           idToken,
+//           userData: userData[0],
+//         });
+//       } catch (error) {
+//         console.error("Błąd podczas logowania użytkownika:", error);
+//         res.status(500).json({ error: "Błąd serwera", details: error.message });
+//       }
+//     },
+//     onFailure: (err) => {
+//       console.error("Błąd logowania użytkownika:", err);
+//       res.status(401).json({ error: "Błędne dane logowania" });
+//     },
+//   });
+// };
 
 export const updateUser = async (userId, updatedUserData) => {
   try {
